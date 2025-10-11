@@ -1,0 +1,9 @@
+langchain 
+langchain-community 
+deepseek 
+python-dotenv 
+requests
+langchain_deepseek
+flask
+flask_cors
+langgraph

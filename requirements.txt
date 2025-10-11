@@ -6,4 +6,5 @@ requests
 langchain_deepseek
 flask
 flask_cors
+guicorn
 langgraph

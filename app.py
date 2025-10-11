@@ -116,11 +116,12 @@ def ask_agent():
         logger.error(f"Error processing question: {e}")
         return jsonify({"error": "An internal error occurred while processing your question."}), 500
 
-@app.route('', methods=['GET'])
+@app.route('/', methods=['GET'])
 def start():
     return "Hello"
 
 # --- 5. Run the Flask App ---
 if __name__ == '__main__':
     app.run(debug=False)
+
 

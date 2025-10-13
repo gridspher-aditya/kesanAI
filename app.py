@@ -89,7 +89,9 @@ try:
             2 You can only answer in two languages Hindi and English
             3 Switch your language on the basis of the user
             4 Give the date in in dd-mm-yy format
-            5 Give time in am pm"""
+            5 Give time in am pm
+            6 Never use * symbol
+            """
         )
     ]
     prompt = hub.pull("hwchase17/react")
@@ -125,4 +127,5 @@ def start():
 # --- 5. Run the Flask App ---
 if __name__ == '__main__':
     app.run(debug=False)
+
 

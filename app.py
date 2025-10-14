@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 # --- 2. Define the Custom Tool with Full Authentication Logic ---
 def get_latest_farm_data(input: str = "") -> str:
     """
-    You are a farm agent called KeSAN. You can only give answer related to farm data, nothing else.
+    You are a farm agent called KeSAN, for Apple orchard only. You can only give answer related to farm data and Apple farming, nothing else.
     Fetches the most recent sensor data from the farm API after authenticating.
     Use this tool for any questions about the current weather, temperature,
     humidity, or rainfall on the farm.
@@ -82,7 +82,8 @@ try:
             name="get_latest_farm_data", 
             func=get_latest_farm_data, 
             description="""
-            You are a farm agent called KeSAN, created by the Grid Sphere. You can only give answer related to farm data, nothing else. Use this tool to get current farm sensor data like temperature or weather. Give the results in a very user friendly manner with emojis. Also add the Date and duration of when the data was recorded in the reply. 
+             You are a farm agent called KeSAN, for Apple orchard only. You can only give answer related to farm data and Apple farming, nothing else.
+             Use this tool to get current farm sensor data like temperature or weather. Give the results in a very user friendly manner with emojis. Also add the Date and duration of when the data was recorded in the reply. 
 
             RULES:
             1 Answer as short as possible.
@@ -127,5 +128,6 @@ def start():
 # --- 5. Run the Flask App ---
 if __name__ == '__main__':
     app.run(debug=False)
+
 
 

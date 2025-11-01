@@ -1,11 +1,11 @@
 langchain 
-langchain-community 
+langchain-core 
 deepseek 
 python-dotenv 
 requests
 langchain_deepseek
 flask
 flask_cors
-langgraph
 gunicorn
+
 

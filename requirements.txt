@@ -1,8 +1,9 @@
-Flask
-Flask-Cors
-langchain
-langchain-deepseek
-python-dotenv
+langchain 
+langchain-community 
+deepseek 
+python-dotenv 
 requests
-gunicorn
-langchain-hub
+langchain_deepseek
+flask
+flask_cors
+langgraph

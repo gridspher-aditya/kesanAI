@@ -9,7 +9,7 @@ from flask_cors import CORS
 # --- LangChain Imports ---
 from langchain_deepseek import ChatDeepSeek
 # FIX: AgentExecutor and create_react_agent are in langchain.agents
-from langchain.agents import AgentExecutor, create_react_agent
+from langchain.agents import create_react_agent
 # FIX: Tool and tool are in langchain.tools
 from langchain.tools import tool, Tool 
 from langchain import hub
@@ -124,4 +124,5 @@ def start():
 # --- 5. Run the Flask App ---
 if __name__ == '__main__':
     app.run(debug=False)
+
 

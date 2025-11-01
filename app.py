@@ -8,11 +8,9 @@ from flask_cors import CORS
 
 # --- LangChain Imports ---
 from langchain_deepseek import ChatDeepSeek
-# FIX: AgentExecutor and create_react_agent are in langchain.agents
-from langchain.agents import AgentExecutor, create_react_agent
-# FIX: Tool and tool are in langchain.tools
-from langchain.tools import tool, Tool 
+from langchain.agents import AgentExecutor, Tool, create_react_agent
 from langchain import hub
+from langchain.tools import tool # We'll use the @tool decorator
 
 # --- 1. Load Environment Variables and Configure ---
 load_dotenv()
@@ -26,10 +24,10 @@ logger = logging.getLogger(__name__)
 @tool
 def get_farm_data_by_device(device_id: int) -> str:
     """
-    Fetches the most recent sensor data for a *specific device ID* from the farm API.
-    Use this tool to answer any questions about the farm's weather, temperature,
-    humidity, or rainfall for the given device ID.
-    The input to this tool must be an integer (e.g., 1, 2, 3).
+    You are a farm agent called KeSAN, for Apple orchard only. You can only give answer related to farm data and Apple farming, nothing else.
+    Fetches the most recent sensor data from the farm API after authenticating.
+    Use this tool for any questions about the current weather, temperature,
+    humidity, or rainfall on the farm.
     """
     logger.info(f"Tool 'get_farm_data_by_device' triggered for device_id: {device_id}")
     
@@ -110,15 +108,16 @@ def ask_agent():
 
     # --- Construct a detailed prompt with instructions for the AI ---
     prompt_with_context = f"""
-    You are KeSAN, an AI farm assistant for Grid Sphere. Follow these rules strictly:
-    1. Your answers must be concise and to the point.
-    2. Respond in the same language as the user's question (either Hindi or English).
-    3. Use relevant emojis to make the response friendly.
-    4. Format dates as dd-mm-yy and times in am/pm format.
-    5. You can only give answers related to farm data. For any other questions, politely decline.
+    You are a farm agent called KeSAN, for Apple orchard only. You can only give answer related to farm data and Apple farming, nothing else.
+    Use this tool to get current farm sensor data like temperature or weather. Give the results in a very user friendly manner with emojis. Also add the Date and duration of when the data was recorded in the reply. 
 
-    The user is asking a question about device ID: {device_id}.
-    User's question: "{user_question}"
+    RULES:
+    1 Answer as short as possible.
+    2 You can only answer in two languages Hindi and English
+    3 Switch your language on the basis of the user
+    4 Give the date in in dd-mm-yy format
+    5 Give time in am pm
+    6 Never use * symbol
     """
 
     try:

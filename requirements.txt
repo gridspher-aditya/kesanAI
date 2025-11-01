@@ -7,3 +7,5 @@ langchain_deepseek
 flask
 flask_cors
 langgraph
+gunicorn
+

@@ -8,9 +8,9 @@ from flask_cors import CORS
 
 # --- LangChain Imports ---
 from langchain_deepseek import ChatDeepSeek
-from langchain.agents import AgentExecutor, Tool, create_react_agent
+from langchain.agents import AgentExecutor, create_react_agent
+from langchain.tools import Tool
 from langchain import hub
-from langchain.tools import tool # We'll use the @tool decorator
 
 # --- 1. Load Environment Variables and Configure ---
 load_dotenv()
@@ -21,7 +21,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # --- 2. Define the Custom Tool (Simplified) ---
-@tool
+@Tool
 def get_farm_data_by_device(device_id: int) -> str:
     """
     You are a farm agent called KeSAN, for Apple orchard only. You can only give answer related to farm data and Apple farming, nothing else.

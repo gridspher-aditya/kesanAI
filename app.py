@@ -5,19 +5,20 @@ import json
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from datetime import datetime # Import datetime to get the current time
 
 # --- LangChain Imports ---
 from langchain_deepseek import ChatDeepSeek
-from langchain.agents import create_react_agent
-from langchain.agents import AgentExecutor
-# FIX: Tool and tool are in langchain.tools
-from langchain.tools import tool, Tool 
+from langchain.agents import AgentExecutor, create_react_agent
+from langchain.tools import tool, Tool
 from langchain import hub
 
 # --- 1. Load Environment Variables and Configure ---
 load_dotenv()
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
-# Removed FARM_API_BASE_URL, USERNAME, and PASSWORD as they are no longer needed
+API_BASE_URL = os.getenv("FARM_API_BASE_URL")
+USERNAME = os.getenv("FARM_USERNAME")
+PASSWORD = os.getenv("FARM_PASSWORD")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -27,7 +28,7 @@ logger = logging.getLogger(__name__)
 def get_farm_data_by_device(device_id: int) -> str:
     """
     Fetches the most recent sensor data for a *specific device ID* from the farm API.
-    Use this tool to answer any questions about the farm's weather, temperature,
+    Use this tool to answer any questions about the current weather, temperature,
     humidity, or rainfall for the given device ID.
     The input to this tool must be an integer (e.g., 1, 2, 3).
     """
@@ -49,6 +50,7 @@ def get_farm_data_by_device(device_id: int) -> str:
         readings_list = data.get('readings', [])
         
         if isinstance(readings_list, list) and readings_list:
+            # Return only the first item (the latest reading) from the list
             return json.dumps(readings_list[0])
         
         return json.dumps({"status": f"No readings available for device {device_id}"})
@@ -64,6 +66,49 @@ def get_farm_data_by_device(device_id: int) -> str:
 app = Flask(__name__)
 CORS(app)
 
+# --- NEW: Define the AI's persona and rules in a clear, constant string ---
+SYSTEM_PERSONA = """
+You are KeSAN, an AI farm assistant for Grid Sphere, specializing in Apple Orchards.
+You are helpful, friendly, and an expert in farm data.
+
+Follow these rules strictly on every response:
+1.  **Formatting:** NEVER use markdown or any special symbols like *, #, or `.`
+2.  **Language:** Respond ONLY in the language of the user's question (either Hindi or English).
+3.  **Date Format:** When mentioning a date from a tool, parse the 'timestamp' (e.g., "2025-10-08 14:24:13") and format it as a full date (e.g., "8 October 2025").
+4.  **Time Format:** Format all times in AM/PM (e.g., "2:24 PM").
+5.  **Emojis:** Use relevant emojis (like 🌡️, 💧, ☀️, 🌬️, 🌧️) to make the response friendly.
+6.  **Scope:** You can ONLY answer questions related to farm data and Apple farming. For any other questions, politely decline and state your purpose.
+
+---
+
+Give result in this format:
+Hello! Here is your full weather report for the Apple Orchard, based on the latest data from your sensor.
+
+📅 Date: [Date]
+🕐 Time: [Time]
+
+Current Conditions:
+
+🌡️ Air Temperature: 
+💧 Air Humidity: 
+☀️ Light Intensity:
+🌬️ Wind Speed: 
+🧭 Wind Direction: [Eg: N, S, E, W, NE, SE, NW]
+🌧️ Rainfall: 
+📊 Pressure:
+
+Soil Conditions:
+
+🌱 Surface Temperature: 
+💧 Surface Humidity: 
+🌱 Depth Temperature: 
+💧 Depth Humidity: 
+
+[Final summary]
+
+---
+"""
+
 agent_executor = None
 try:
     llm = ChatDeepSeek(api_key=DEEPSEEK_API_KEY, model="deepseek-chat")
@@ -77,7 +122,7 @@ try:
         agent=agent, 
         tools=tools, 
         verbose=True, 
-        handle_parsing_errors=True 
+        handle_parsing_errors=True
     )
     
     logger.info("LangChain RAG Agent initialized successfully.")
@@ -97,18 +142,17 @@ def ask_agent():
     if not user_question or not device_id:
         return jsonify({"error": "A question and deviceId must be provided."}), 400
 
+    # --- NEW: Get the current date and time to provide context to the AI ---
+    # Example: "Monday, 3 November 2025 at 1:30 PM"
+    current_time = datetime.now().strftime('%A, %d %B %Y at %I:%M %p')
+
+    # --- NEW: Construct a more robust prompt ---
     prompt_with_context = f"""
-    You are a farm agent called KeSAN, for Apple orchard only. You can only give answer related to farm data and Apple farming, nothing else.
-     Use this tool to get current farm sensor data like temperature or weather. Give the results in a very user friendly manner with emojis. Also add the Date and duration of when the data was recorded in the reply. 
+    {SYSTEM_PERSONA}
 
-    RULES:
-    1 Answer as short as possible.
-    2 You can only answer in two languages Hindi and English
-    3 Switch your language on the basis of the user
-    4 Give the date in in dd-mm-yy format
-    5 Give time in am pm
-    6 Never use * symbol
-
+    Current time for your reference: {current_time}
+    The user is asking about device ID: {device_id}
+    
     User's question: "{user_question}"
     """
 
@@ -127,8 +171,3 @@ def start():
 # --- 5. Run the Flask App ---
 if __name__ == '__main__':
     app.run(debug=False)
-
-
-
-
-
